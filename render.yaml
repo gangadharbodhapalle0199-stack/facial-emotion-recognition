@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: facial-emotion-recognition
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: "pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    autoDeploy: true
