@@ -476,7 +476,7 @@
             sendPredictionRequest(blob);
           }
         }
-      }, 400); // 2.5 FPS for smooth CPU inference
+      }, 900); // 900ms prevents network and CPU congestion on shared/cloud instances
     }
 
     function stopLiveInference() {

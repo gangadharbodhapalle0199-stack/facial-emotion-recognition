@@ -38,6 +38,7 @@ app.add_middleware(
 
 # 3. Model Architecture & Weight Loading
 device = torch.device("cpu")
+torch.set_num_threads(2)  # Prevent CPU saturation on 0.1 CPU cloud containers
 
 # Support both EfficientNet-B0 (current higher accuracy model) and ResNet18
 BASE_DIR = Path(__file__).resolve().parent
@@ -127,13 +128,15 @@ async def serve_index():
 
 
 @app.post("/predict")
-async def predict(file: UploadFile = File(...)):
+def predict(file: UploadFile = File(...)):
+    # Standard sync def allows FastAPI to execute inference in its threadpool,
+    # preventing multi-user requests from locking the asyncio event loop.
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Uploaded file must be an image.")
 
     try:
-        # Read uploaded image bytes
-        image_bytes = await file.read()
+        # Read uploaded image bytes synchronously
+        image_bytes = file.file.read()
         nparr = np.frombuffer(image_bytes, np.uint8)
         img_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
